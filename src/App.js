@@ -5,6 +5,7 @@ import CanvasJSReact from './canvasjs.react';
 import ReactTable from "react-table-6";
 import "react-table-6/react-table.css"
 import { render } from '@testing-library/react';
+import Checkbox from './Components/Checkbox'
 	var CanvasJS = CanvasJSReact.CanvasJS;
 	var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 	var name = ""
@@ -22,18 +23,15 @@ import { render } from '@testing-library/react';
 				currentData: [],
 				currentDataa: [],
 				chartsList: [],
+				isToggleOn: false      
 			};
 
 			this.ws = new WebSocket("ws://192.168.0.170:4444/Sound");
 			this.es = new WebSocket("ws://192.168.0.170:4444/Light");
+			this.send = this.send.bind(this)
+			this.handleClick = this.handleClick.bind(this);
 		}
-		componentDidMount() {
-			this.timerID = setInterval(
-				() => this.tick(),
-				100
-			);
-
-		}
+		
 		componentWillUnmount() {
 			clearInterval(this.timerID);
 		}
@@ -43,6 +41,33 @@ import { render } from '@testing-library/react';
 				date: new Date()
 			});
 		}
+		send() {
+			return fetch('http://192.168.0.170:8000/a', {
+			  method: 'POST',
+			  headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+			  },
+			  body: JSON.stringify({
+				'state': this.state.isToggleOn
+			  })
+			}).then((response) => response.json())
+			  .then((responseJson) => {
+				return responseJson.success;
+			  })
+			  .catch((error) => {
+				console.error(error);
+			  });
+		  }
+	 
+	   handleClick() {
+	 
+		 this.setState(state => ({
+		   isToggleOn: !state.isToggleOn
+		 }));
+			 this.send()
+		 
+	   }
 
 
 		generateDataPoints(noOfDps) {
@@ -59,6 +84,7 @@ import { render } from '@testing-library/react';
 			})
 
 			// console.log(num);
+			// console.log(nuddm);
 			yVal = this.state.xxx;
 			yVal.map((w)=> {
 				if (w.Sound < 0) {
@@ -71,10 +97,10 @@ import { render } from '@testing-library/react';
 			for (var i = 0; i < noOfDps; i++) {
 				num = new Date(times[0 + i])
 				dps.push({ x: num, y: sins[0 + i] });
-				// if (this.state.xxx.length > 100) {
-				// 	shifted = this.state.xxx.shift();
+				if (this.state.xxx.length > 100) {
+					// shifted = this.state.xxx.shift();
 
-				// }
+				}
 
 			}
 			//  console.log(dps)
@@ -85,7 +111,7 @@ import { render } from '@testing-library/react';
 			var xVal = ""
 			let yVal = 0
 			var dps = [];
-			var shifted
+			var shiftedd
 			let sins = []
 			let times = []
 			let num =
@@ -104,10 +130,10 @@ import { render } from '@testing-library/react';
 			for (var i = 0; i < noOfDps; i++) {
 				num = new Date(times[0 + i])
 				dps.push({ x: num, y: sins[0 + i] });
-				// if (this.state.xxxx.length > 100) {
-				// 	shiftedd = this.state.xxxx.shift();
+				if (this.state.xxxx.length > 100) {
+					// shiftedd = this.state.xxxx.shift();
 
-				// }
+				}
 
 			}
 			//  console.log(dps)
@@ -129,7 +155,10 @@ import { render } from '@testing-library/react';
 			});
 
 		}
-
+		
+		componentDidUpdate(prevProps) {
+			
+		  }
 
 		render() {
 
@@ -144,8 +173,8 @@ import { render } from '@testing-library/react';
 				const oldData = this.state.currentData;
 				const newData = JSON.parse(event.data);
 				const currentData = oldData.concat(newData);
-				this.state.xxx = currentData
-				// console.log(newData);
+				this.setState({xxx:currentData}) 
+				console.log(newData);
 				this.setState({ currentData }, () => console.log());
 
 			};
@@ -156,8 +185,8 @@ import { render } from '@testing-library/react';
 				const oldDataa = this.state.currentDataa;
 				const newDataa = JSON.parse(event.data);
 				const currentDataa = oldDataa.concat(newDataa);
-				this.state.xxxx = currentDataa
-				console.log(this.state.xxxx);
+				this.setState({xxxx:currentDataa}) 
+				// console.log(this.state.xxxx);
 				this.setState({ currentDataa }, () => console.log());
 			};
 			this.es.onclose = () => {
@@ -199,11 +228,13 @@ import { render } from '@testing-library/react';
 						<div>
 						<CanvasJSChart options={options_1}
 						/>
+						<Checkbox/>
+						<button onClick={()=>{this.handleClick()}}>
+        {this.state.isToggleOn ? 'Выключено' : 'Включено'}
+      </button>
 				</div>
 				</div>
 			);
-
-
 		}
 	}
 	export default App;
